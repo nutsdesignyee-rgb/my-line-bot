@@ -7,7 +7,7 @@ import os
 app = FastAPI()
 
 # 使用您剛提供的全新 Token
-CHANNEL_ACCESS_TOKEN = "Z94rd6FQrOWknL+X7rdJxNbask34AiKOKsC7F3QXWTrtjs3oyKYjSYv+polJX78+PApMyn2tDOl4V2HK45mUsitd/LU4L6/cv6TWlA4lBMQNddi1GO3Wu0Uf4uR/K1DmIpg4N/izXJNuNIrtflwQhAdB04t89/1O/w1cDnyilFU="
+CHANNEL_ACCESS_TOKEN = "772eYoivPc43abwMMAe3IvjMFegB5JlFmUkIg+oj5Ydjfu1KT2tRAwlKCle+XmqlPApMyn2tDOl4V2HK45mUsitd/LU4L6/cv6TWlA4lBMQeuuLHiuECcqtNYqvFkfS+haD1lKSXePENi9Kp1HqyIQdB04t89/1O/w1cDnyilFU="
 
 TRASH_SCHEDULE = [
     {"start": "2026-01-19", "end": "2026-01-23", "staff": "HAN + YI"},
