@@ -6,18 +6,38 @@ import os
 
 app = FastAPI()
 
-# 直接寫入 Token 確保連線
+# 直接寫入 Token
 CHANNEL_ACCESS_TOKEN = "Z94rd6FQrOWknL+X7rdJxNbask34AiKOKsC7F3QXWTrtjs3oyKYjSYv+polJX78+PApMyn2tDOl4V2HK45mUsitd/LU4L6/cv6TWlA4lBMQNddi1GO3Wu0Uf4uR/K1DmIpg4N/izXJNuNIrtflwQhAdB04t89/1O/w1cDnyilFU="
+
+# 直接將班表與規則寫死在程式碼中，避免讀取檔案失敗
+TRASH_SCHEDULE = [
+    {"start": "2026-01-19", "end": "2026-01-23", "staff": "HAN + YI"},
+    {"start": "2026-01-26", "end": "2026-01-30", "staff": "HAN + YA"},
+    {"start": "2026-02-02", "end": "2026-02-06", "staff": "YI + YA"},
+    {"start": "2026-02-09", "end": "2026-02-13", "staff": "HAN + YI"},
+    {"start": "2026-02-16", "end": "2026-02-20", "staff": "HAN + YA"},
+    {"start": "2026-02-23", "end": "2026-02-27", "staff": "YI + YA"},
+    {"start": "2026-03-02", "end": "2026-03-06", "staff": "HAN + YI"},
+    {"start": "2026-03-09", "end": "2026-03-13", "staff": "HAN + YA"},
+    {"start": "2026-03-16", "end": "2026-03-20", "staff": "YI + YA"},
+    {"start": "2026-03-23", "end": "2026-03-27", "staff": "HAN + YI"},
+    {"start": "2026-03-30", "end": "2026-04-03", "staff": "HAN + YA"},
+    {"start": "2026-04-06", "end": "2026-04-10", "staff": "YI + YA"}
+]
+
+RECURRING_TASKS = [
+    {"name": "倒垃圾值日", "rule": "每三個月的1號", "description": "安排下個季度的值日生", "months": [1, 4, 7, 10], "day": 1},
+    {"name": "廣告報表", "rule": "每月的1-10號", "description": "完成上個月的成效報表+傳給業者", "range": [1, 10]},
+    {"name": "拍攝案件", "rule": "每月的10-15號", "description": "確認下個月的拍攝案件", "range": [10, 15]},
+    {"name": "追加廣告", "rule": "每月的10-20號", "description": "確認本月的廣告追加預算", "range": [10, 20]},
+    {"name": "億品鍋廣告報表", "rule": "每月的15-25號", "description": "完成億品鍋上個月的成效報表+傳給業者", "range": [15, 25]},
+    {"name": "品牌活動", "rule": "每月的15-20號", "description": "確認下個月的活動內容", "range": [15, 20]},
+    {"name": "貼文排程", "rule": "每月的25-31號", "description": "提供下個月的貼文排程", "range": [25, 31]},
+    {"name": "追加單&網紅表單", "rule": "每月的25-31號", "description": "填寫網紅表單與追加單", "range": [25, 31]}
+]
 
 def get_weekly_info():
     try:
-        file_path = 'trash_schedule.json'
-        if not os.path.exists(file_path):
-            return "⚠️ 找不到班表檔案，請檢查 GitHub 上的 trash_schedule.json"
-            
-        with open(file_path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-        
         today = datetime.now()
         day_num = today.day
         month_num = today.month
@@ -25,25 +45,17 @@ def get_weekly_info():
         
         result = ["【🥜本週工作與提醒】"]
         
-        # 1. 處理倒垃圾班表 (增加多重結構相容性)
+        # 1. 倒垃圾
         staff = "查無資料"
-        trash_list = []
-        if isinstance(data, dict):
-            trash_list = data.get("trash_schedule", [])
-        elif isinstance(data, list):
-            trash_list = data
-            
-        for entry in trash_list:
-            if entry.get('start') <= today_str <= entry.get('end'):
-                staff = entry.get('staff')
+        for entry in TRASH_SCHEDULE:
+            if entry['start'] <= today_str <= entry['end']:
+                staff = entry['staff']
                 break
         result.append(f"🗑️ 倒垃圾負責人：{staff}")
         
-        # 2. 處理定期事項
+        # 2. 定期事項
         tasks = []
-        recurring_tasks = data.get("recurring_tasks", []) if isinstance(data, dict) else []
-        
-        for task in recurring_tasks:
+        for task in RECURRING_TASKS:
             is_active = False
             if "range" in task:
                 if task["range"][0] <= day_num <= task["range"][1]:
@@ -63,11 +75,11 @@ def get_weekly_info():
             
         return "\n".join(result)
     except Exception as e:
-        return f"❌ 系統讀取錯誤：{str(e)}\n請確認 JSON 格式是否正確。"
+        return f"❌ 系統錯誤：{str(e)}"
 
 @app.get("/")
 async def root():
-    return {"status": "Bot is running!"}
+    return {"status": "Bot is running!", "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 
 @app.post("/callback")
 async def callback(request: Request):
@@ -80,10 +92,11 @@ async def callback(request: Request):
                 text = event["message"]["text"].strip()
                 reply_token = event["replyToken"]
                 
-                # 支援多種關鍵字觸發
                 if any(k in text for k in ["🥜本周", "🥜本週", "🥜倒垃圾"]):
                     message = get_weekly_info()
                     reply_message(reply_token, message)
+                elif "🥜測試" in text:
+                    reply_message(reply_token, "✅ 機器人大腦運作正常！目前時間：" + datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     except Exception:
         pass
     return "OK"
