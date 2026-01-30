@@ -6,7 +6,7 @@ import os
 
 app = FastAPI()
 
-# 使用您剛提供的全新 Token
+# 使用您提供的最新 Token
 CHANNEL_ACCESS_TOKEN = "772eYoivPc43abwMMAe3IvjMFegB5JlFmUkIg+oj5Ydjfu1KT2tRAwlKCle+XmqlPApMyn2tDOl4V2HK45mUsitd/LU4L6/cv6TWlA4lBMQeuuLHiuECcqtNYqvFkfS+haD1lKSXePENi9Kp1HqyIQdB04t89/1O/w1cDnyilFU="
 
 TRASH_SCHEDULE = [
@@ -36,55 +36,46 @@ RECURRING_TASKS = [
 ]
 
 def get_weekly_info():
-    try:
-        today = datetime.now()
-        day_num = today.day
-        month_num = today.month
-        today_str = today.strftime("%Y-%m-%d")
-        
-        result = ["【🥜本週工作與提醒】"]
-        
-        # 1. 倒垃圾
-        staff = "查無資料"
-        for entry in TRASH_SCHEDULE:
-            if entry['start'] <= today_str <= entry['end']:
-                staff = entry['staff']
-                break
-        result.append(f"🗑️ 倒垃圾負責人：{staff}")
-        
-        # 2. 定期事項
-        tasks = []
-        for task in RECURRING_TASKS:
-            is_active = False
-            if "range" in task:
-                if task["range"][0] <= day_num <= task["range"][1]:
-                    is_active = True
-            elif "months" in task and "day" in task:
-                if month_num in task["months"] and day_num == task["day"]:
-                    is_active = True
-            
-            if is_active:
-                tasks.append(f"📌 {task['name']}：{task['description']}")
-        
-        if tasks:
-            result.append("\n【本週待辦事項】")
-            result.extend(tasks)
-        else:
-            result.append("\n本週暫無其他定期待辦事項。")
-            
-        return "\n".join(result)
-    except Exception as e:
-        return f"❌ 系統錯誤：{str(e)}"
+    today = datetime.now()
+    day_num = today.day
+    month_num = today.month
+    today_str = today.strftime("%Y-%m-%d")
+    result = ["【🥜本週工作與提醒】"]
+    staff = "查無資料"
+    for entry in TRASH_SCHEDULE:
+        if entry['start'] <= today_str <= entry['end']:
+            staff = entry['staff']
+            break
+    result.append(f"🗑️ 倒垃圾負責人：{staff}")
+    tasks = []
+    for task in RECURRING_TASKS:
+        is_active = False
+        if "range" in task:
+            if task["range"][0] <= day_num <= task["range"][1]:
+                is_active = True
+        elif "months" in task and "day" in task:
+            if month_num in task["months"] and day_num == task["day"]:
+                is_active = True
+        if is_active:
+            tasks.append(f"📌 {task['name']}：{task['description']}")
+    if tasks:
+        result.append("\n【本週待辦事項】")
+        result.extend(tasks)
+    else:
+        result.append("\n本週暫無其他定期待辦事項。")
+    return "\n".join(result)
 
 @app.get("/")
 async def root():
-    return {"status": "Bot is running!", "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+    return {"status": "Debug Bot is running!"}
 
 @app.post("/callback")
 async def callback(request: Request):
     try:
         body = await request.body()
         data = json.loads(body)
+        print(f"--- Received Event ---")
+        print(json.dumps(data, indent=2))
         
         for event in data.get("events", []):
             if event.get("type") == "message" and event.get("message", {}).get("type") == "text":
@@ -94,8 +85,8 @@ async def callback(request: Request):
                 if any(k in text for k in ["🥜本周", "🥜本週", "🥜倒垃圾"]):
                     message = get_weekly_info()
                     reply_message(reply_token, message)
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"!!! Callback Error: {str(e)}")
     return "OK"
 
 def reply_message(reply_token, text):
@@ -108,7 +99,10 @@ def reply_message(reply_token, text):
         "replyToken": reply_token,
         "messages": [{"type": "text", "text": text}]
     }
-    requests.post(url, headers=headers, json=payload)
+    response = requests.post(url, headers=headers, json=payload)
+    print(f"--- LINE API Response ---")
+    print(f"Status Code: {response.status_code}")
+    print(f"Response Body: {response.text}")
 
 if __name__ == "__main__":
     import uvicorn
