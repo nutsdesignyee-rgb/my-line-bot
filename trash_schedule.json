@@ -1,0 +1,26 @@
+{
+  "trash_schedule": [
+    {"start": "2026-01-19", "end": "2026-01-23", "staff": "HAN + YI"},
+    {"start": "2026-01-26", "end": "2026-01-30", "staff": "HAN + YA"},
+    {"start": "2026-02-02", "end": "2026-02-06", "staff": "YI + YA"},
+    {"start": "2026-02-09", "end": "2026-02-13", "staff": "HAN + YI"},
+    {"start": "2026-02-16", "end": "2026-02-20", "staff": "HAN + YA"},
+    {"start": "2026-02-23", "end": "2026-02-27", "staff": "YI + YA"},
+    {"start": "2026-03-02", "end": "2026-03-06", "staff": "HAN + YI"},
+    {"start": "2026-03-09", "end": "2026-03-13", "staff": "HAN + YA"},
+    {"start": "2026-03-16", "end": "2026-03-20", "staff": "YI + YA"},
+    {"start": "2026-03-23", "end": "2026-03-27", "staff": "HAN + YI"},
+    {"start": "2026-03-30", "end": "2026-04-03", "staff": "HAN + YA"},
+    {"start": "2026-04-06", "end": "2026-04-10", "staff": "YI + YA"}
+  ],
+  "recurring_tasks": [
+    {"name": "倒垃圾值日", "rule": "每三個月的1號", "description": "安排下個季度的值日生", "months": [1, 4, 7, 10], "day": 1},
+    {"name": "廣告報表", "rule": "每月的1-10號", "description": "完成上個月的成效報表+傳給業者", "range": [1, 10]},
+    {"name": "拍攝案件", "rule": "每月的10-15號", "description": "確認下個月的拍攝案件", "range": [10, 15]},
+    {"name": "追加廣告", "rule": "每月的10-20號", "description": "確認本月的廣告追加預算", "range": [10, 20]},
+    {"name": "億品鍋廣告報表", "rule": "每月的15-25號", "description": "完成億品鍋上個月的成效報表+傳給業者", "range": [15, 25]},
+    {"name": "品牌活動", "rule": "每月的15-20號", "description": "確認下個月的活動內容", "range": [15, 20]},
+    {"name": "貼文排程", "rule": "每月的25-31號", "description": "提供下個月的貼文排程", "range": [25, 31]},
+    {"name": "追加單&網紅表單", "rule": "每月的25-31號", "description": "填寫網紅表單與追加單", "range": [25, 31]}
+  ]
+}
